@@ -174,7 +174,7 @@ USER = "__DUMMY_TRANSFORMERS_USER__"
 ENDPOINT_STAGING = "https://hub-ci.huggingface.co"
 
 # Not critical, only usable on the sandboxed CI instance.
-TOKEN = "hf_94wBhPGp6KrrTH3KDchhKpRxZwd6dmHWLL"
+TOKEN = "dummy_token"
 
 if is_torch_available():
     import torch

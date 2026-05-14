@@ -1,4 +1,5 @@
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
+MODEL_PATH=${MODEL_PATH:-/path/to/Llama-2-7b-hf}
 
 # Precision options: auto (default, GPU auto-detect), bf16, fp16, or fp32
 # --precision=auto   # Default: auto-detect based on GPU capability
@@ -8,7 +9,7 @@ export CUDA_VISIBLE_DEVICES=0
 
 python train_hira.py \
 --peft_type=hira \
---model=/caobing/biomedical/llm_checkpoint/shakechen/Llama-2-7b-hf \
+--model="$MODEL_PATH" \
 --r_ab=32 \
 --enable_grad_ckpt --epoch=3 --lr=1e-3 --batch=16 \
 --dataset=common_170k --seed=36 \
