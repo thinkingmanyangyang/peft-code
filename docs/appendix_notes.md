@@ -1,8 +1,8 @@
 # Appendix Notes
 
-This file records the main supplementary material removed from the camera-ready paper. It keeps the method derivations, complexity analysis, and hyperparameter settings.
+This file records supplementary material removed from the camera-ready paper. It keeps the method derivations, complexity analysis, and hyperparameter settings.
 
-## A. High-Rank Capacity of SeMi-LoRA
+## High-Rank Capacity of SeMi-LoRA
 
 ### Notation
 
@@ -62,7 +62,7 @@ This update can be merged into the base weight:
 W = W_0 + Delta W.
 ```
 
-Therefore, SeMi-LoRA preserves the same zero-latency inference property as LoRA after merging.
+Therefore, SeMi-LoRA preserves LoRA's no-extra-latency inference property after merging.
 
 ### Rank Bound
 
@@ -106,7 +106,7 @@ rank(R^m + I) <= cr
 rank(C^m + I) <= cr
 ```
 
-Since `I` is full rank, these residual mixers are typically full rank unless the learned matrices produce degenerate cancellations, such as `R^m = -I` or `C^m = -I`.
+For generic mixer parameters, the residual mixers remain full rank. They can lose rank only under degenerate cancellations, such as `R^m = -I` or `C^m = -I`.
 
 Combining the above:
 
@@ -116,7 +116,7 @@ rank(Delta W) <= min(d_in, d_out, c r).
 
 This is a rank-capacity statement. It shows that increasing the channel number `c` expands the maximum rank capacity of the update while keeping the base rank `r` fixed. It does not claim that the realized effective rank must always increase during training.
 
-## B. Complete Update Pattern
+## Complete Update Pattern
 
 SeMi-LoRA expands as:
 
@@ -157,7 +157,7 @@ B^m C^m R^m A^m =
 
 Here `C in R^{r x c x c}` stores channel-mixing weights, and `C_{:,i,j}` is used to build a diagonal matrix for mixing from source channel `j` to target channel `i` at each rank index.
 
-When off-diagonal channel weights are non-zero, the update matrix is no longer restricted to independent blocks. This enables cross-group interactions and supports a dense, complete update pattern over `W`.
+When off-diagonal channel weights are non-zero, the update matrix is no longer structurally restricted to independent blocks. This enables cross-group interactions and allows the update to cover all channel blocks of `W`.
 
 ### Relation to MELoRA
 
@@ -200,7 +200,14 @@ A_j in R^{r x g}
 B_i in R^{k x r}
 ```
 
-If `R^m = 0` and Channel Mix is configured so that off-diagonal blocks pass the shared rank space across channels, then `B^m (C^m + I) A^m` produces all blocks:
+Set `R^m = 0`. Configure Channel Mix so that:
+
+```text
+diag(C_{:,i,j}) = I_r, for i != j
+diag(C_{:,i,i}) = 0
+```
+
+Because `(C^m + I)` contributes identity blocks on the diagonal, `B^m (C^m + I) A^m` then produces every block:
 
 ```text
 (i, j) block = B_i A_j.
@@ -208,7 +215,7 @@ If `R^m = 0` and Channel Mix is configured so that off-diagonal blocks pass the 
 
 Thus SeMi-LoRA can recover the dense LoRA update under a suitable Channel Mix construction. In this sense, both MELoRA-like local updates and LoRA-like dense updates are contained in the SeMi-LoRA parameterization.
 
-## D. Complexity and Efficiency Analysis
+## Complexity and Efficiency Analysis
 
 ### Setup
 
@@ -354,16 +361,16 @@ SeMi-LoRA channels c = 8
 the per-layer training overhead is:
 
 | Method | Config | Trainable params | Param order | FLOPs | FLOP order |
-|---|---:|---:|---:|---:|---:|
+|---|---|---:|---|---:|---|
 | LoRA | r = 32 | 262k | O(rd) | 524k | O(rd) |
 | MELoRA | r = 32, n = 8 | 262k | O(rd) | 524k | O(rd) |
 | VeRA | r = 256 | 4.4k | O(d) | 4.2M | O(rd) |
-| HiRA | r = 32 | 262k | O(rd) | ~1.07G | O(rd^2) |
+| HiRA | r = 32 | 262k | O(rd) | ~1.09G | O(rd^2) |
 | SeMi-LoRA | r = 32, c = 8 | 272k (+3.9%) | O(rd) | 545k (+3.9%) | O(rd) |
 
 This explains why SeMi-LoRA can add global feature mixing while retaining LoRA-like training cost.
 
-## E. Hyperparameter Settings
+## Hyperparameter Settings
 
 ### GLUE
 
