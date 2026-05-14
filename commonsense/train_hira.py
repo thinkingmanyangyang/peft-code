@@ -17,13 +17,13 @@ import jsonlines
 import torch
 import transformers
 from pytictoc import TicToc
-from models.get_models import print_trainable_parameters, get_tokenizer, get_prefix_tuning_models, get_hira_models, get_fft_models, get_lora_models, get_smora_models
+from models.get_models import print_trainable_parameters, get_tokenizer, get_prefix_tuning_models, get_hira_models, get_fft_models
 import argparse
 from customized_trainer import customized_trainer
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--peft_type', type=str,
-                    choices=['prefix', 'hira', 'fft', 'lora', 'smora'])
+                    choices=['prefix', 'hira', 'fft'])
 parser.add_argument('--enable_grad_ckpt', action='store_true')
 parser.add_argument('--batch', type=int, default=32)
 parser.add_argument('--grad_acc', type=int, default=1)
@@ -51,7 +51,7 @@ parser.add_argument('--eval_strategy', type=str, default='epoch', choices=['no',
 parser.add_argument('--eval_steps', type=float, default=1.0)
 parser.add_argument('--max_new_tokens', type=int, default=None)
 parser.add_argument('--beam_size', type=int, default=None)
-parser.add_argument('--virtual_tokens', type=int, default=20)
+parser.add_argument('--virtual_tokens', type=int, default=8)
 parser.add_argument('--compute_rank', action='store_true')
 parser.add_argument('--compute_norm', action='store_true')
 parser.add_argument('--load_order', type=int, default=-1)
@@ -126,7 +126,6 @@ if peft_type == 'hira':
     exp_name = exp_name + f'init={init_ab_}-'
     exp_name = exp_name + f'train={train_ab}-'
 
-
 if args.seed is not None:
     def seed_everything(seed: int):
         import random, os
@@ -150,12 +149,6 @@ output_dir_by_time = exp_name + args.exp_name + '-' + datetime.now().strftime(
 
 if args.ckpt is None:
     os.makedirs(output_dir_by_time, exist_ok=True)
-    
-    # Save training configuration immediately for inference (even if training fails)
-    config_path = os.path.join(output_dir_by_time, 'output.jsonl')
-    with jsonlines.open(config_path, mode='w') as writer:
-        writer.write(args_dict)
-    print(f"Training configuration saved to {config_path}")
 
 train_dataset = HGDataset(dataset_map[dataset_name], 'train', task_map[dataset_name], training_ratio=args.dataset_ratio)
 valid_dataset = HGDataset(dataset_map[dataset_name], 'validation', task_map[dataset_name],
@@ -184,10 +177,6 @@ elif peft_type == 'prefix':
     model, tokenizer, model_config = get_prefix_tuning_models(load_bit=args.load_bit, model_name=model_name,
                                                               enable_checkpoint=args.enable_grad_ckpt,
                                                               virtual_tokens=args.virtual_tokens)
-
-elif peft_type == 'smora':
-    model, tokenizer, model_config = get_smora_models(load_bit=args.load_bit, model_name=model_name, enable_checkpoint=args.enable_grad_ckpt,
-                                                     r_ab=args.r_ab,target_modules=args.target_modules, use_smora=True, use_mix=2, group_size=8, lora_alpha=args.r_ab*2)
 else:
     raise NotImplementedError('Not supported model!')
 trainable_params = print_trainable_parameters(model)
@@ -289,7 +278,7 @@ trainer_args = transformers.Seq2SeqTrainingArguments(
     metric_for_best_model='eval_loss',
     logging_steps=1,
     remove_unused_columns=False,
-    save_on_each_node=True,  # Set to True for distributed training with load_best_model_at_end
+    save_on_each_node=False,
     save_safetensors=peft_type == 'fft',
     output_dir=output_dir_by_time,
     do_eval=True,
@@ -308,15 +297,6 @@ trainer_args = transformers.Seq2SeqTrainingArguments(
     load_best_model_at_end=True,
     predict_with_generate=True,
 )
-
-# log precision
-if trainer_args.bf16:
-    print("Training with bf16 precision")
-elif trainer_args.fp16:
-    print("Training with fp16 precision")
-else:
-    print("Training with fp32 precision")
-
 trainer = customized_trainer.Seq2SeqTrainer(
     model=model,
     train_dataset=train_dataset,
@@ -474,9 +454,8 @@ for _output_path, _eval_result in eval_result.items():
             _output_path = '{}/output.jsonl'.format(output_dir_by_time)
         mem_used = torch.cuda.mem_get_info()[1] / 1024 / 1024 - torch.cuda.mem_get_info()[0] / 1024 / 1024
 
-        # Append detailed information after training (mode='a' for append)
-        # Note: args_dict was already saved before training starts
-        with jsonlines.open(_output_path, mode='a') as writer:
+        with jsonlines.open(_output_path, mode='w') as writer:
+            writer.write(args_dict)
             if peft_type != 'fft':
                 writer.write(model_config.to_dict())
             else:
