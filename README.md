@@ -121,7 +121,7 @@ The corresponding extra FLOPs are:
 2 c r^2 + 2 r c^2
 ```
 
-More supplementary notes are available in `docs/appendix_notes.md`.
+More supplementary notes are available in [docs/appendix_notes.md](docs/appendix_notes.md).
 
 ## Citation
 
