@@ -23,21 +23,21 @@ The Channel Mix matrices are $C_t\in\mathbb{R}^{c\times c}$ for $t=1,\ldots,r$. 
 The block-diagonal compression and decompression matrices are
 
 $$
-A^m=\operatorname{diag}(A_1,\ldots,A_c)\in\mathbb{R}^{cr\times d_{\text{in}}},
+A^m=\mathrm{diag}(A_1,\ldots,A_c)\in\mathbb{R}^{cr\times d_{\text{in}}},
 \qquad
-B^m=\operatorname{diag}(B_1,\ldots,B_c)\in\mathbb{R}^{d_{\text{out}}\times cr}.
+B^m=\mathrm{diag}(B_1,\ldots,B_c)\in\mathbb{R}^{d_{\text{out}}\times cr}.
 $$
 
 The Rank Mix matrix is also block diagonal:
 
 $$
-R^m=\operatorname{diag}(R_1,\ldots,R_c)\in\mathbb{R}^{cr\times cr}.
+R^m=\mathrm{diag}(R_1,\ldots,R_c)\in\mathbb{R}^{cr\times cr}.
 $$
 
 The Channel Mix matrix $C^m\in\mathbb{R}^{cr\times cr}$ mixes channels at each fixed rank index. Its $(i,j)$ block is diagonal:
 
 $$
-C^m_{i,j}=\operatorname{diag}(C_{:,i,j})\in\mathbb{R}^{r\times r}.
+C^m_{i,j}=\mathrm{diag}(C_{:,i,j})\in\mathbb{R}^{r\times r}.
 $$
 
 The residual Rank Mix and Channel Mix correspond to multiplying by $(R^m+I)$ and $(C^m+I)$.
@@ -63,47 +63,47 @@ Therefore, SeMi-LoRA preserves LoRA's no-extra-latency inference property after 
 We use the following standard rank facts:
 
 $$
-\operatorname{rank}(A)\leq \min(a,b),\quad A\in\mathbb{R}^{a\times b},
+\mathrm{rank}(A)\leq \min(a,b),\quad A\in\mathbb{R}^{a\times b},
 $$
 
 $$
-\operatorname{rank}(AB)\leq \min(\operatorname{rank}(A),\operatorname{rank}(B)),
+\mathrm{rank}(AB)\leq \min(\mathrm{rank}(A),\mathrm{rank}(B)),
 $$
 
 $$
-\operatorname{rank}(A+B)\leq \operatorname{rank}(A)+\operatorname{rank}(B),
+\mathrm{rank}(A+B)\leq \mathrm{rank}(A)+\mathrm{rank}(B),
 $$
 
 $$
-\operatorname{rank}(\operatorname{diag}(M_1,\ldots,M_n))
-=\sum_{i=1}^{n}\operatorname{rank}(M_i).
+\mathrm{rank}(\mathrm{diag}(M_1,\ldots,M_n))
+=\sum_{i=1}^{n}\mathrm{rank}(M_i).
 $$
 
 For SeMi-LoRA,
 
 $$
 \begin{aligned}
-\operatorname{rank}(\Delta W)
-&=\operatorname{rank}\!\left(B^m(C^m+I)(R^m+I)A^m\right)\\
-&\leq \min\{\operatorname{rank}(B^m),\operatorname{rank}(C^m+I),
-\operatorname{rank}(R^m+I),\operatorname{rank}(A^m)\}.
+\mathrm{rank}(\Delta W)
+&=\mathrm{rank}\!\left(B^m(C^m+I)(R^m+I)A^m\right)\\
+&\leq \min\{\mathrm{rank}(B^m),\mathrm{rank}(C^m+I),
+\mathrm{rank}(R^m+I),\mathrm{rank}(A^m)\}.
 \end{aligned}
 $$
 
 Since $A^m$ and $B^m$ are block diagonal,
 
 $$
-\operatorname{rank}(A^m)=\sum_{i=1}^{c}\operatorname{rank}(A_i),
+\mathrm{rank}(A^m)=\sum_{i=1}^{c}\mathrm{rank}(A_i),
 \qquad
-\operatorname{rank}(B^m)=\sum_{i=1}^{c}\operatorname{rank}(B_i).
+\mathrm{rank}(B^m)=\sum_{i=1}^{c}\mathrm{rank}(B_i).
 $$
 
 Under the standard low-rank setting $r\ll\min(g,k)$ and assuming the mini adapters are full rank in their low-dimensional subspaces,
 
 $$
-\operatorname{rank}(A_i)=\operatorname{rank}(B_i)=r,
+\mathrm{rank}(A_i)=\mathrm{rank}(B_i)=r,
 \qquad
-\operatorname{rank}(A^m)=\operatorname{rank}(B^m)=cr.
+\mathrm{rank}(A^m)=\mathrm{rank}(B^m)=cr.
 $$
 
 The residual mixers satisfy
@@ -116,8 +116,8 @@ $$
 and therefore
 
 $$
-\operatorname{rank}(R^m+I)\leq cr,\qquad
-\operatorname{rank}(C^m+I)\leq cr.
+\mathrm{rank}(R^m+I)\leq cr,\qquad
+\mathrm{rank}(C^m+I)\leq cr.
 $$
 
 For generic mixer parameters, the residual mixers remain full rank. They can lose rank only under degenerate cancellations, such as $R^m=-I$ or $C^m=-I$.
@@ -125,7 +125,7 @@ For generic mixer parameters, the residual mixers remain full rank. They can los
 Combining the above,
 
 $$
-\operatorname{rank}(\Delta W)\leq \min(d_{\text{in}},d_{\text{out}},cr).
+\mathrm{rank}(\Delta W)\leq \min(d_{\text{in}},d_{\text{out}},cr).
 $$
 
 This is a rank-capacity statement. It shows that increasing the channel number $c$ expands the maximum rank capacity of the update while keeping the base rank $r$ fixed. It does not claim that the realized effective rank must always increase during training.
@@ -146,7 +146,7 @@ $$
 The term $B^mA^m$ is the independent block-wise mini-LoRA update:
 
 $$
-B^mA^m=\operatorname{diag}(B_1A_1,\ldots,B_cA_c).
+B^mA^m=\mathrm{diag}(B_1A_1,\ldots,B_cA_c).
 $$
 
 This is block diagonal, so it only updates local channel groups.
@@ -154,7 +154,7 @@ This is block diagonal, so it only updates local channel groups.
 The leading term $B^mC^mR^mA^m$ introduces cross-channel blocks. Under the output-channel by input-channel block view, its $(i,j)$ block is
 
 $$
-B_i\operatorname{diag}(C_{:,i,j})R_jA_j.
+B_i\mathrm{diag}(C_{:,i,j})R_jA_j.
 $$
 
 Therefore,
@@ -167,7 +167,7 @@ B_1D_{1,1}R_1A_1 & \cdots & B_1D_{1,c}R_cA_c\\
 B_cD_{c,1}R_1A_1 & \cdots & B_cD_{c,c}R_cA_c
 \end{bmatrix},
 \quad
-D_{i,j}=\operatorname{diag}(C_{:,i,j}).
+D_{i,j}=\mathrm{diag}(C_{:,i,j}).
 $$
 
 Here $C\in\mathbb{R}^{r\times c\times c}$ stores channel-mixing weights, and $C_{:,i,j}$ is used to build a diagonal matrix for mixing from source channel $j$ to target channel $i$ at each rank index.
@@ -179,7 +179,7 @@ When off-diagonal channel weights are non-zero, the update matrix is no longer s
 If both mixers are disabled, i.e., $R^m=0$ and $C^m=0$, then
 
 $$
-\Delta W=B^mA^m=\operatorname{diag}(B_1A_1,\ldots,B_cA_c).
+\Delta W=B^mA^m=\mathrm{diag}(B_1A_1,\ldots,B_cA_c).
 $$
 
 This recovers a MELoRA-like block-diagonal update. Even if the total rank is large, the update remains local because input and output groups do not interact across channels.
@@ -199,9 +199,9 @@ where $A_j\in\mathbb{R}^{r\times g}$ and $B_i\in\mathbb{R}^{k\times r}$.
 Set $R^m=0$. Configure Channel Mix so that
 
 $$
-\operatorname{diag}(C_{:,i,j})=I_r\quad (i\neq j),
+\mathrm{diag}(C_{:,i,j})=I_r\quad (i\neq j),
 \qquad
-\operatorname{diag}(C_{:,i,i})=0.
+\mathrm{diag}(C_{:,i,i})=0.
 $$
 
 Because $(C^m+I)$ contributes identity blocks on the diagonal, $B^m(C^m+I)A^m$ then produces every block:
@@ -231,7 +231,7 @@ $$
 FLOPs:
 
 $$
-\operatorname{FLOPs}_{\text{LoRA}}\approx 2r(d_{\text{in}}+d_{\text{out}}).
+\mathrm{FLOPs}_{\text{LoRA}}\approx 2r(d_{\text{in}}+d_{\text{out}}).
 $$
 
 ### MELoRA
@@ -251,7 +251,7 @@ $$
 FLOPs:
 
 $$
-\operatorname{FLOPs}_{\text{MELoRA}}
+\mathrm{FLOPs}_{\text{MELoRA}}
 \approx n\cdot 2r\left(\frac{d_{\text{in}}}{n}+\frac{d_{\text{out}}}{n}\right)
 =2r(d_{\text{in}}+d_{\text{out}}).
 $$
@@ -271,7 +271,7 @@ $$
 FLOPs:
 
 $$
-\operatorname{FLOPs}_{\text{VeRA}}\approx 2r(d_{\text{in}}+d_{\text{out}}).
+\mathrm{FLOPs}_{\text{VeRA}}\approx 2r(d_{\text{in}}+d_{\text{out}}).
 $$
 
 Although VeRA is parameter efficient, it often uses a larger rank to preserve expressivity, which increases compute.
@@ -289,7 +289,7 @@ Unlike LoRA, this update cannot generally be evaluated as $B(Ax)$ because of the
 Training overhead:
 
 $$
-\operatorname{FLOPs}_{\text{HiRA}}
+\mathrm{FLOPs}_{\text{HiRA}}
 =2rd_{\text{in}}d_{\text{out}}+d_{\text{in}}d_{\text{out}}
 \approx O(rd^2).
 $$
@@ -312,7 +312,7 @@ Here $r(d_{\text{in}}+d_{\text{out}})$ comes from compression/decompression, $cr
 FLOPs:
 
 $$
-\operatorname{FLOPs}_{\text{SeMi-LoRA}}
+\mathrm{FLOPs}_{\text{SeMi-LoRA}}
 \approx 2r(d_{\text{in}}+d_{\text{out}})+2cr^2+2rc^2.
 $$
 
